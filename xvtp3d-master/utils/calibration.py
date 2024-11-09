@@ -23,6 +23,12 @@ class Calibration:
 
     egovehicle coord:
     front x, left y, up z
+
+    K = [
+        [fu, 0, cu],  # 第一行：fu 是水平方向的焦距，cu 是主点在 x 方向的坐标
+        [0, fv, cv],  # 第二行：fv 是垂直方向的焦距，cv 是主点在 y 方向的坐标
+        [0, 0, 1]     # 第三行：保持齐次坐标形式
+        ]
     """
 
     def __init__(self, calib: Dict[str, Any]) -> None:
@@ -34,16 +40,17 @@ class Calibration:
 
         self.calib_data = calib
 
-        self.K = get_camera_intrinsic_matrix(calib["value"])  # 这个值是不变的
-        self.extrinsic = np.eye(4)  # 这个值是会变的
+        self.K = get_camera_intrinsic_matrix(calib["value"])  # 这个值是不变的,内参
+        self.extrinsic = np.eye(4)  # 这个值是会变的，外参
 
-        self.cu = self.calib_data["value"]["focal_center_x_px_"]
-        self.cv = self.calib_data["value"]["focal_center_y_px_"]
-        self.fu = self.calib_data["value"]["focal_length_x_px_"]
-        self.fv = self.calib_data["value"]["focal_length_y_px_"]
-
-        self.bx = self.K[0, 3] / (-self.fu)
-        self.by = self.K[1, 3] / (-self.fv)
+        # cu和cv由于相机的制造公差或偏移，通常不是图像的正中心(0,0)，所以需要校正
+        self.cu = self.calib_data["value"]["focal_center_x_px_"]# cu是图像中心的 x 坐标
+        self.cv = self.calib_data["value"]["focal_center_y_px_"]# cv是图像中心的 y 坐标
+        self.fu = self.calib_data["value"]["focal_length_x_px_"]# 水平方向的焦距（每个像素在 x 轴的大小）
+        self.fv = self.calib_data["value"]["focal_length_y_px_"]# 垂直方向的焦距（每个像素在 y 轴的大小）
+        
+        self.bx = self.K[0, 3] / (-self.fu)# 表示相机主点在图像坐标系中 x 方向的位置（即光轴在 x 轴的交点）
+        self.by = self.K[1, 3] / (-self.fv)# 表示相机主点在图像坐标系中 y 方向的位置（即光轴在 y 轴的交点）
 
         self.camera = calib["key"][10:]
 
@@ -55,8 +62,8 @@ class Calibration:
         # hight表示相机高度
 
         # 外参
-        a = pos[0]
-        b = pos[1]
+        a = pos[0] # 在真实世界坐标系下的x
+        b = pos[1] # 在真实世界坐标系下的y
         c = pos[2] + hight  # 在center的z方向上，hight，作为视线高度
 
         cosx = rot[0]
@@ -75,7 +82,7 @@ class Calibration:
                        [1., 0., 0., 0.],
                        [0., 0., 0., 1.]])  # 默认z轴为光轴，且平行于地平面
 
-        world_2_cam = np.matmul(np.matmul(R2, R1), T)
+        world_2_cam = np.matmul(np.matmul(R2, R1), T) # 最终的外参矩阵，表示从世界坐标系到相机坐标系的转换。
 
         self.extrinsic = world_2_cam
 
@@ -89,7 +96,7 @@ class Calibration:
             nx4 points in Homogeneous by appending 1
         """
         n = pts_3d.shape[0]
-        pts_3d_hom = np.hstack((pts_3d, np.ones((n, 1))))
+        pts_3d_hom = np.hstack((pts_3d, np.ones((n, 1))))# 在每个点的末尾添加一个1，将原来的三维坐标 (x, y, z) 扩展为齐次坐标 (x, y, z, 1)
         return pts_3d_hom
 
     def project_ego_to_image(self, pts_3d_ego: np.ndarray) -> np.ndarray:

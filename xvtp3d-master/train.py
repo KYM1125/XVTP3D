@@ -19,7 +19,6 @@ from dataloader.argo_loader import make_dataloader
 from modeling.my_class import TNT3D
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0,1,2,3,4'  # 多卡训练记得通过这里控制device
 
-
 def main():  # todo: 把所有np的reshape改成[:, None, :]这样的
     parser = argparse.ArgumentParser()
     parser.add_argument('--config_file', default='configs/config_argo.yml', type=str)
