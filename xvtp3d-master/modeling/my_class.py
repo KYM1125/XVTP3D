@@ -24,8 +24,11 @@ class TNT3D(nn.Module):
         if 'ns' not in cfg.save_tag:  # argo
             with open(cfg.DATALOADER.calib_path, 'r') as f:
                 calib_file = json.load(f)
-            camera_data = calib_file['camera_data_'][5]
-            assert 'ring_front_center' in camera_data['key']
+            # camera_data = calib_file['camera_data_'][5]
+            # assert 'ring_front_center' in camera_data['key']
+            camera_data = calib_file['camera_data_'][7]
+            print('camera_data[\'key\']:', camera_data['key'])
+            assert 'image_raw_ring_front_center' in camera_data['key']
             self.calib = Calibration(camera_data)
             self.calib.fpv_type = cfg.fpv_type
         else:  # nuscenes

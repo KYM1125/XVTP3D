@@ -1,0 +1,33 @@
+
+---------basic information---------
+
+save_tag = 221216run
+save_dir = ../save_model/221216run/train_2024_11_09_22_43
+device = cuda:0
+distributed = 1
+fpv_type = self
+save_model = True
+modality = both
+scheduler_lr_type = m
+milestones = (100, 160, 200, 240)
+batch_size = 64
+subset = True
+bev_loss_weight = 1.0
+fpv_loss_weight = 1.0
+
+-----------------------------------
+
+
+---------modeling information---------
+
+hidden_size = 128
+mode_num = 6
+gt_decoder = True
+cross_type = 1
+random_mask = 0.0
+cross_enc = False
+self_rein = False
+share_weight = True.
+
+-----------------------------------
+
